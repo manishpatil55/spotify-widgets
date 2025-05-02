@@ -1,23 +1,23 @@
 {
-    "version": 2,
-    "builds": [
-      {
-        "src": "server/server.js",
-        "use": "@vercel/node"
-      },
-      {
-        "src": "public/widgets/*/index.html",
-        "use": "@vercel/static"
-      }
-    ],
-    "routes": [
-      {
-        "src": "/api/(.*)",
-        "dest": "/server/server.js"
-      },
-      {
-        "src": "/widget/(.*)",
-        "dest": "/public/widgets/$1/index.html"
-      }
-    ]
-  }
+  "version": 2,
+  "builds": [
+    {
+      "src": "server/server.js",
+      "use": "@vercel/node"
+    },
+    {
+      "src": "public/widget/*/index.html",
+      "use": "@vercel/static"
+    }
+  ],
+  "routes": [
+    {
+      "src": "/api/(.*)",
+      "dest": "/server/server.js"
+    },
+    {
+      "src": "/widget/(.*)",
+      "dest": "/public/widget/$1/index.html"
+    }
+  ]
+}
