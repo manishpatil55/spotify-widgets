@@ -20,7 +20,7 @@ redisClient.connect().catch(console.error);
 const allowedOrigins = [
   'http://localhost:5500',
   'https://spotify-widgets.vercel.app',
-  'https://spotify-widgets-*.vercel.app'
+  'https://spotify-widgets-*-manishpatil55.vercel.app'
 ];
 
 app.use(cors({
