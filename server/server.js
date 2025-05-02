@@ -6,26 +6,28 @@ const Vibrant = require('node-vibrant');
 const session = require('express-session');
 const RedisStore = require('connect-redis')(session);
 const redis = require('redis');
+const crypto = require('crypto');
+
+const { getTokens, refreshAccessToken } = require('./auth');
 
 const app = express();
 
-// Configure Redis for production
 const redisClient = redis.createClient({
   url: process.env.REDIS_URL,
   legacyMode: true
 });
 redisClient.connect().catch(console.error);
 
-// Enhanced CORS configuration
+// CORS setup
 const allowedOrigins = [
   'http://localhost:5500',
   'https://spotify-widgets.vercel.app',
-  'https://spotify-widgets-*-manishpatil55.vercel.app'
+  'https://spotify-widgets-.*.vercel.app'
 ];
 
 app.use(cors({
   origin: (origin, callback) => {
-    if (!origin || allowedOrigins.some(o => origin.match(new RegExp(o.replace('*', '.*'))))) {
+    if (!origin || allowedOrigins.some(o => origin.match(new RegExp(o)))) {
       callback(null, true);
     } else {
       callback(new Error('Not allowed by CORS'));
@@ -34,7 +36,7 @@ app.use(cors({
   credentials: true
 }));
 
-// Session management
+// Session
 app.use(session({
   store: new RedisStore({ client: redisClient }),
   secret: process.env.SESSION_SECRET,
@@ -46,7 +48,7 @@ app.use(session({
   }
 }));
 
-// Enhanced authentication endpoints
+// /api/auth
 app.get('/api/auth', (req, res) => {
   const state = generateRandomString(16);
   req.session.state = state;
@@ -60,39 +62,23 @@ app.get('/api/auth', (req, res) => {
     state: state,
     show_dialog: true
   };
-  
   authUrl.search = new URLSearchParams(params).toString();
   res.redirect(authUrl.href);
 });
 
+// /api/auth/callback
 app.get('/api/auth/callback', async (req, res) => {
   try {
     const { code, state } = req.query;
-    
-    // Validate state parameter
+
     if (state !== req.session.state) {
       return res.status(403).send('Invalid state parameter');
     }
 
-    const { data } = await axios.post('https://accounts.spotify.com/api/token',
-      new URLSearchParams({
-        code,
-        redirect_uri: process.env.SPOTIFY_REDIRECT_URI,
-        grant_type: 'authorization_code'
-      }),
-      {
-        headers: {
-          'Authorization': 'Basic ' + Buffer.from(
-            `${process.env.SPOTIFY_CLIENT_ID}:${process.env.SPOTIFY_CLIENT_SECRET}`
-          ).toString('base64'),
-          'Content-Type': 'application/x-www-form-urlencoded'
-        }
-      }
-    );
+    const tokenData = await getTokens(code);
 
-    // Store tokens in session
-    req.session.accessToken = data.access_token;
-    req.session.refreshToken = data.refresh_token;
+    req.session.accessToken = tokenData.access_token;
+    req.session.refreshToken = tokenData.refresh_token;
 
     res.redirect(process.env.FRONTEND_URI || '/');
   } catch (error) {
@@ -100,7 +86,7 @@ app.get('/api/auth/callback', async (req, res) => {
   }
 });
 
-// Enhanced Now Playing endpoint
+// /api/now-playing
 app.get('/api/now-playing', async (req, res) => {
   try {
     if (!req.session.accessToken) {
@@ -117,7 +103,7 @@ app.get('/api/now-playing', async (req, res) => {
 
     const palette = await Vibrant.from(data.item.album.images[0]?.url)
       .getPalette()
-      .catch(() => ({})); // Graceful fallback
+      .catch(() => ({}));
 
     res.json({
       is_playing: data.is_playing,
@@ -139,44 +125,24 @@ app.get('/api/now-playing', async (req, res) => {
     });
   } catch (error) {
     if (error.response?.status === 401 && req.session.refreshToken) {
-      await refreshAccessToken(req);
-      return res.redirect(req.originalUrl);
+      try {
+        const tokenData = await refreshAccessToken(req.session.refreshToken);
+        req.session.accessToken = tokenData.access_token;
+        if (tokenData.refresh_token) {
+          req.session.refreshToken = tokenData.refresh_token;
+        }
+        return res.redirect(req.originalUrl);
+      } catch (refreshError) {
+        req.session.destroy();
+        return res.status(401).json({ error: 'Session expired. Please log in again.' });
+      }
     }
     res.status(500).json({ error: error.message });
   }
 });
 
-async function refreshAccessToken(req) {
-  try {
-    const { data } = await axios.post('https://accounts.spotify.com/api/token',
-      new URLSearchParams({
-        grant_type: 'refresh_token',
-        refresh_token: req.session.refreshToken
-      }),
-      {
-        headers: {
-          'Authorization': 'Basic ' + Buffer.from(
-            `${process.env.SPOTIFY_CLIENT_ID}:${process.env.SPOTIFY_CLIENT_SECRET}`
-          ).toString('base64'),
-          'Content-Type': 'application/x-www-form-urlencoded'
-        }
-      }
-    );
-    
-    req.session.accessToken = data.access_token;
-    if (data.refresh_token) {
-      req.session.refreshToken = data.refresh_token;
-    }
-  } catch (error) {
-    console.error('Token refresh failed:', error.message);
-    req.session.destroy();
-  }
-}
-
 function generateRandomString(length) {
-  return [...crypto.randomBytes(length)]
-    .map(byte => byte.toString(16).padStart(2, '0'))
-    .join('');
+  return crypto.randomBytes(length).toString('hex').slice(0, length);
 }
 
 const PORT = process.env.PORT || 3000;
