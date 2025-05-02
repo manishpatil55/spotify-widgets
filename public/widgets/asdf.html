@@ -1,0 +1,174 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Spotify Widget</title>
+  <style>
+    @import url('https://fonts.googleapis.com/css2?family=SF+Pro+Display:wght@400;600&display=swap');
+
+    :root {
+      --dominant-color: #121212;
+      --secondary-color: #1DB954;
+      --text-primary: #fff;
+      --text-secondary: #ccc;
+    }
+
+    * {
+      box-sizing: border-box;
+    }
+
+    body {
+      margin: 0;
+      background: #000;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      height: 100vh;
+      font-family: 'SF Pro Display', sans-serif;
+    }
+
+    .spotify-widget {
+      position: relative;
+      width: 360px;
+      height: 100px;
+      border-radius: 20px;
+      overflow: hidden;
+      background: var(--dominant-color);
+      box-shadow: 0 12px 32px rgba(0, 0, 0, 0.6);
+      color: var(--text-primary);
+      display: flex;
+      align-items: center;
+      padding: 16px;
+      backdrop-filter: blur(18px);
+    }
+
+    .bg-blur {
+      position: absolute;
+      inset: 0;
+      background-size: cover;
+      background-position: center;
+      filter: blur(24px) brightness(0.6);
+      z-index: 0;
+    }
+
+    .album-art {
+      width: 68px;
+      height: 68px;
+      border-radius: 12px;
+      object-fit: cover;
+      flex-shrink: 0;
+      position: relative;
+      z-index: 2;
+    }
+
+    .track-info {
+      margin-left: 16px;
+      flex: 1;
+      z-index: 2;
+      display: flex;
+      flex-direction: column;
+      justify-content: center;
+    }
+
+    .track-title {
+      font-size: 15px;
+      font-weight: 600;
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+    }
+
+    .artist-name {
+      font-size: 13px;
+      color: var(--text-secondary);
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+      margin-top: 2px;
+    }
+
+
+    .spotify-logo {
+      position: absolute;
+      top: 12px;
+      right: 12px;
+      width: 20px;
+      height: 20px;
+      z-index: 2;
+      color: white;
+    }
+
+    .spotify-logo svg {
+      width: 100%;
+      height: 100%;
+      fill: white;
+    }
+  </style>
+</head>
+<body>
+  <div class="spotify-widget">
+    <div class="bg-blur" id="bg-blur"></div>
+    <img class="album-art" id="album-art" src="" alt="Album Art" />
+    <div class="track-info">
+      <div class="track-title" id="song-title">Not Playing</div>
+      <div class="artist-name" id="artist-name">Spotify</div>
+    </div>
+
+    <div class="spotify-logo">
+      <svg viewBox="0 0 24 24">
+        <path d="M12 0C5.4 0 0 5.4 0 12s5.4 12 12 12 12-5.4 12-12S18.66 0 12 0zm5.521 17.34c-.24.359-.66.48-1.021.24-2.82-1.74-6.36-2.101-10.561-1.141-.418.122-.779-.179-.899-.539-.12-.421.18-.78.54-.9 4.56-1.021 8.52-.6 11.64 1.32.42.18.479.659.301 1.02zm1.44-3.3c-.301.42-.841.6-1.262.3-3.239-1.98-8.159-2.58-11.939-1.38-.479.12-1.02-.12-1.14-.6-.12-.48.12-1.021.6-1.141C9.6 9.9 15 10.56 18.72 12.84c.36.18.54.72.241 1.2zm.12-3.36C15.24 8.4 8.82 8.16 5.16 9.301c-.6.179-1.2-.181-1.38-.721-.18-.601.18-1.2.72-1.381 4.26-1.26 11.28-1.02 15.721 1.621.539.3.719 1.02.419 1.56-.3.3-1.02.42-1.56.12z"/>
+      </svg>
+    </div>
+  </div>
+
+  <script>
+    let currentTrackId = null;
+
+    async function updateNowPlaying() {
+      try {
+        const res = await fetch('http://127.0.0.1:3000/api/now-playing');
+        const data = await res.json();
+
+        const albumArt = document.getElementById('album-art');
+        const songTitle = document.getElementById('song-title');
+        const artistName = document.getElementById('artist-name');
+        const bgBlur = document.getElementById('bg-blur');
+        const waveBar = document.getElementById('wave-bar');
+
+        if (data.is_playing && data.item) {
+          songTitle.textContent = data.item.name;
+          artistName.textContent = data.item.artists.join(', ');
+
+          if (currentTrackId !== data.item.id) {
+            albumArt.src = data.item.album.image;
+            bgBlur.style.backgroundImage = `url('${data.item.album.image}')`;
+            currentTrackId = data.item.id;
+          }
+
+          document.documentElement.style.setProperty('--dominant-color', data.colors.dominant || '#191414');
+          document.documentElement.style.setProperty('--secondary-color', data.colors.secondary || '#1DB954');
+          waveBar.style.opacity = 1;
+        } else {
+          songTitle.textContent = "Not Playing";
+          artistName.textContent = "Spotify";
+          albumArt.src = "";
+          bgBlur.style.backgroundImage = "none";
+          waveBar.style.opacity = 0.3;
+        }
+      } catch (err) {
+        console.error('Error fetching now playing:', err);
+      }
+    }
+
+    setInterval(updateNowPlaying, 1000);
+    updateNowPlaying();
+
+    document.querySelector('.spotify-widget').addEventListener('click', () => {
+      if (currentTrackId) {
+        window.open(`https://open.spotify.com/track/${currentTrackId}`, '_blank');
+      }
+    });
+  </script>
+</body>
+</html>

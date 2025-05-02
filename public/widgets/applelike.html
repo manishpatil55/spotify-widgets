@@ -1,0 +1,145 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Now Playing - Apple Music Style</title>
+  <style>
+    :root {
+      --dominant-color: #ffffff10;
+      --text-color: #fff;
+      --blur-bg: rgba(255, 255, 255, 0.08);
+    }
+
+    body {
+      margin: 0;
+      background: #0f0f0f;
+      height: 100vh;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-family: -apple-system, BlinkMacSystemFont, sans-serif;
+    }
+
+    .widget {
+      width: 320px;
+      height: 120px;
+      border-radius: 24px;
+      background: var(--blur-bg);
+      backdrop-filter: blur(20px);
+      -webkit-backdrop-filter: blur(20px);
+      box-shadow: 0 10px 30px rgba(0, 0, 0, 0.4);
+      display: flex;
+      gap: 12px;
+      padding: 12px;
+      color: var(--text-color);
+      cursor: pointer;
+      transition: all 0.3s ease;
+    }
+
+    .album-art {
+      height: 96px;
+      width: 96px;
+      border-radius: 16px;
+      object-fit: cover;
+      flex-shrink: 0;
+      background: #222;
+    }
+
+    .track-info {
+      flex: 1;
+      display: flex;
+      flex-direction: column;
+      justify-content: center;
+      overflow: hidden;
+    }
+
+    .title {
+      font-size: 16px;
+      font-weight: 600;
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+    }
+
+    .artist {
+      font-size: 14px;
+      color: #ccc;
+      margin-top: 4px;
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+    }
+
+    .progress {
+      height: 4px;
+      background: rgba(255, 255, 255, 0.2);
+      border-radius: 2px;
+      margin-top: 12px;
+      overflow: hidden;
+    }
+
+    .bar {
+      height: 100%;
+      width: 0%;
+      background: #fff;
+      transition: width 0.3s linear;
+    }
+  </style>
+</head>
+<body>
+  <div class="widget" id="widget">
+    <img id="album-art" class="album-art" src="" alt="Album Art">
+    <div class="track-info">
+      <div class="title" id="title">Not Playing</div>
+      <div class="artist" id="artist">Spotify</div>
+      <div class="progress"><div class="bar" id="bar"></div></div>
+    </div>
+  </div>
+
+  <script>
+    let currentTrackId = null;
+
+    async function fetchNowPlaying() {
+      try {
+        const response = await fetch('http://127.0.0.1:3000/api/now-playing');
+        const data = await response.json();
+
+        const art = document.getElementById('album-art');
+        const title = document.getElementById('title');
+        const artist = document.getElementById('artist');
+        const bar = document.getElementById('bar');
+
+        if (data.is_playing && data.item) {
+          title.textContent = data.item.name;
+          artist.textContent = data.item.artists.join(', ');
+
+          if (currentTrackId !== data.item.id) {
+            art.src = data.item.album.image;
+            currentTrackId = data.item.id;
+          }
+
+          bar.style.width = (data.progress_ms / data.item.duration_ms) * 100 + '%';
+        } else {
+          title.textContent = "Not Playing";
+          artist.textContent = "Spotify";
+          art.src = "https://upload.wikimedia.org/wikipedia/commons/8/84/Spotify_icon.svg";
+          bar.style.width = "0%";
+          currentTrackId = null;
+        }
+      } catch (err) {
+        console.error("Error:", err);
+      }
+    }
+
+    setInterval(fetchNowPlaying, 1000);
+    fetchNowPlaying();
+
+    document.getElementById('widget').addEventListener('click', () => {
+      if (currentTrackId) {
+        window.open(`https://open.spotify.com/track/${currentTrackId}`, '_blank');
+      }
+    });
+  </script>
+</body>
+</html>
