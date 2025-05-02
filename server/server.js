@@ -3,25 +3,62 @@ const express = require('express');
 const axios = require('axios');
 const cors = require('cors');
 const Vibrant = require('node-vibrant');
+const session = require('express-session');
+const RedisStore = require('connect-redis')(session);
+const redis = require('redis');
 
 const app = express();
+
+// Configure Redis for production
+const redisClient = redis.createClient({
+  url: process.env.REDIS_URL,
+  legacyMode: true
+});
+redisClient.connect().catch(console.error);
+
+// Enhanced CORS configuration
+const allowedOrigins = [
+  'http://localhost:5500',
+  'https://spotify-widgets.vercel.app',
+  'https://spotify-widgets-*.vercel.app'
+];
+
 app.use(cors({
-  origin: 'http://127.0.0.1:5500', // Your Live Server port
+  origin: (origin, callback) => {
+    if (!origin || allowedOrigins.some(o => origin.match(new RegExp(o.replace('*', '.*'))))) {
+      callback(null, true);
+    } else {
+      callback(new Error('Not allowed by CORS'));
+    }
+  },
   credentials: true
 }));
-app.use(express.json());
 
-let accessToken = '';
-let refreshToken = '';
+// Session management
+app.use(session({
+  store: new RedisStore({ client: redisClient }),
+  secret: process.env.SESSION_SECRET,
+  resave: false,
+  saveUninitialized: false,
+  cookie: {
+    secure: process.env.NODE_ENV === 'production',
+    maxAge: 3600000 // 1 hour
+  }
+}));
 
-// Authentication endpoints
+// Enhanced authentication endpoints
 app.get('/api/auth', (req, res) => {
+  const state = generateRandomString(16);
+  req.session.state = state;
+
   const authUrl = new URL('https://accounts.spotify.com/authorize');
   const params = {
     client_id: process.env.SPOTIFY_CLIENT_ID,
     redirect_uri: process.env.SPOTIFY_REDIRECT_URI,
     response_type: 'code',
-    scope: 'user-read-currently-playing user-read-playback-state'
+    scope: 'user-read-currently-playing user-read-playback-state',
+    state: state,
+    show_dialog: true
   };
   
   authUrl.search = new URLSearchParams(params).toString();
@@ -30,7 +67,13 @@ app.get('/api/auth', (req, res) => {
 
 app.get('/api/auth/callback', async (req, res) => {
   try {
-    const { code } = req.query;
+    const { code, state } = req.query;
+    
+    // Validate state parameter
+    if (state !== req.session.state) {
+      return res.status(403).send('Invalid state parameter');
+    }
+
     const { data } = await axios.post('https://accounts.spotify.com/api/token',
       new URLSearchParams({
         code,
@@ -47,27 +90,35 @@ app.get('/api/auth/callback', async (req, res) => {
       }
     );
 
-    accessToken = data.access_token;
-    refreshToken = data.refresh_token;
-    res.send('Authentication successful! You can close this window.');
+    // Store tokens in session
+    req.session.accessToken = data.access_token;
+    req.session.refreshToken = data.refresh_token;
+
+    res.redirect(process.env.FRONTEND_URI || '/');
   } catch (error) {
-    res.status(500).send('Authentication failed: ' + error.message);
+    res.status(500).send(`Authentication failed: ${error.response?.data?.error_description || error.message}`);
   }
 });
 
-// Now Playing endpoint
+// Enhanced Now Playing endpoint
 app.get('/api/now-playing', async (req, res) => {
   try {
+    if (!req.session.accessToken) {
+      return res.status(401).json({ error: 'Unauthorized' });
+    }
+
     const { data } = await axios.get('https://api.spotify.com/v1/me/player/currently-playing', {
-      headers: { 'Authorization': `Bearer ${accessToken}` }
+      headers: { 'Authorization': `Bearer ${req.session.accessToken}` }
     });
 
     if (!data || !data.item) {
       return res.json({ is_playing: false });
     }
 
-    const palette = await Vibrant.from(data.item.album.images[0].url).getPalette();
-    
+    const palette = await Vibrant.from(data.item.album.images[0]?.url)
+      .getPalette()
+      .catch(() => ({})); // Graceful fallback
+
     res.json({
       is_playing: data.is_playing,
       progress_ms: data.progress_ms || 0,
@@ -77,27 +128,30 @@ app.get('/api/now-playing', async (req, res) => {
         artists: data.item.artists.map(artist => artist.name),
         album: {
           name: data.item.album.name,
-          image: data.item.album.images[0].url
+          image: data.item.album.images[0]?.url || ''
         },
         duration_ms: data.item.duration_ms
       },
       colors: {
-        dominant: palette.Vibrant.hex,
-        secondary: palette.Muted.hex
+        dominant: palette.Vibrant?.hex || '#1DB954',
+        secondary: palette.Muted?.hex || '#191414'
       }
     });
   } catch (error) {
-    if (error.response?.status === 401) refreshAccessToken();
+    if (error.response?.status === 401 && req.session.refreshToken) {
+      await refreshAccessToken(req);
+      return res.redirect(req.originalUrl);
+    }
     res.status(500).json({ error: error.message });
   }
 });
 
-async function refreshAccessToken() {
+async function refreshAccessToken(req) {
   try {
     const { data } = await axios.post('https://accounts.spotify.com/api/token',
       new URLSearchParams({
         grant_type: 'refresh_token',
-        refresh_token: refreshToken
+        refresh_token: req.session.refreshToken
       }),
       {
         headers: {
@@ -108,13 +162,24 @@ async function refreshAccessToken() {
         }
       }
     );
-    accessToken = data.access_token;
+    
+    req.session.accessToken = data.access_token;
+    if (data.refresh_token) {
+      req.session.refreshToken = data.refresh_token;
+    }
   } catch (error) {
     console.error('Token refresh failed:', error.message);
+    req.session.destroy();
   }
+}
+
+function generateRandomString(length) {
+  return [...crypto.randomBytes(length)]
+    .map(byte => byte.toString(16).padStart(2, '0'))
+    .join('');
 }
 
 const PORT = process.env.PORT || 3000;
 app.listen(PORT, () => {
-  console.log(`Server running on http://127.0.0.1:${PORT}`);
+  console.log(`Server running on port ${PORT}`);
 });
