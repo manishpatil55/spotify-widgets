@@ -1,23 +1,8 @@
-{
-  "version": 2,
-  "builds": [
+ {
+  "redirects": [
     {
-      "src": "server/server.js",
-      "use": "@vercel/node"
-    },
-    {
-      "src": "public/widget/*/index.html",
-      "use": "@vercel/static"
-    }
-  ],
-  "routes": [
-    {
-      "src": "/api/(.*)",
-      "dest": "/server/server.js"
-    },
-    {
-      "src": "/widget/(.*)",
-      "dest": "/public/widget/$1/index.html"
+      "source": "/",
+      "destination": "https://github.com/manishpatil55/manishpatil55"
     }
   ]
 }
