@@ -42,6 +42,7 @@
 
                 .content {
                     width: 70%;
+                    margin-left: 10px;
                 }
 
                 .song {
@@ -54,8 +55,8 @@
                     white-space: nowrap;
                     text-overflow: ellipsis;
                     
-       <!--     background-color: #000000;  -->
-                   background: linear-gradient(
+    <!--         background-color: #000000;  -->
+                    background: linear-gradient(
                                     125deg, 
                                     rgb({{ songPalette[0][0] }}, {{ songPalette[0][1] }}, {{ songPalette[0][2] }}),
                                     rgb({{ songPalette[1][0] }}, {{ songPalette[1][1] }}, {{ songPalette[1][2] }})
@@ -80,7 +81,7 @@
                     white-space: nowrap;
                     text-overflow: ellipsis;
 
-     <!--        background-color: #000000; --> 
+         <!--     background-color: #000000; --> 
                     background: linear-gradient(
                                     -125deg, 
                                     rgb({{ songPalette[0][0] }}, {{ songPalette[0][1] }}, {{ songPalette[0][2] }}),
@@ -103,9 +104,10 @@
                 }
 
                 #bars {
-                    bottom: 2px;
+                    bottom: 10px;
                     position: absolute; <!--  absolute - relative -->
                     margin: -20px 0 0 0px;
+              <!--       background-color: #000000;  -->
                 }
 
                 .bar {
@@ -113,7 +115,7 @@
                     bottom: 1px;
                     height: 15px;
                     position: absolute; <!--  absolute - relative -->
-    <!--         background-color: #000000;  -->
+                    background-color: #000000; 
                     background: #5433FF;  /* fallback for old browsers */
                     background: -webkit-linear-gradient(to right, #20BDFF, #ab66ff, #5433FF, #20BDFF);  /* Chrome 10-25, Safari 5.1-6 */
                     background: linear-gradient(
