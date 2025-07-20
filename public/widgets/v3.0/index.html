@@ -1,0 +1,109 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Live Spotify Now Playing</title>
+  <style>
+    body {
+      background-color: #121212;
+      color: #fff;
+      font-family: Arial, sans-serif;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      height: 100vh;
+      margin: 0;
+    }
+
+    .widget {
+      background-color: #181818;
+      border: 2px solid #1DB954;
+      border-radius: 12px;
+      padding: 20px;
+      display: flex;
+      align-items: center;
+      gap: 15px;
+      max-width: 500px;
+      width: 90%;
+      box-shadow: 0 0 20px rgba(0,0,0,0.5);
+    }
+
+    .album-art {
+      width: 80px;
+      height: 80px;
+      border-radius: 10px;
+      object-fit: cover;
+    }
+
+    .info {
+      display: flex;
+      flex-direction: column;
+      overflow: hidden;
+    }
+
+    .title {
+      font-size: 1.1rem;
+      font-weight: bold;
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+    }
+
+    .artist {
+      font-size: 0.9rem;
+      color: #aaa;
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+    }
+
+    .time {
+      font-size: 0.8rem;
+      color: #666;
+      margin-top: 5px;
+    }
+  </style>
+</head>
+<body>
+
+  <div class="widget" id="spotify-widget">
+    <img src="" alt="Album Art" class="album-art" id="album-art" />
+    <div class="info">
+      <div class="title" id="track-name">Loading...</div>
+      <div class="artist" id="artist-name"></div>
+      <div class="time" id="track-time"></div>
+    </div>
+  </div>
+
+  <script>
+    async function fetchNowPlaying() {
+      try {
+        const res = await fetch("/api/now-playing");
+        const data = await res.json();
+
+        if (!data || !data.is_playing) {
+          document.getElementById("track-name").textContent = "Not Playing";
+          document.getElementById("artist-name").textContent = "";
+          document.getElementById("track-time").textContent = "";
+          document.getElementById("album-art").src = "/static/placeholder.png";
+          return;
+        }
+
+        document.getElementById("track-name").textContent = data.name;
+        document.getElementById("artist-name").textContent = data.artist;
+        document.getElementById("album-art").src = data.album_image_url;
+        document.getElementById("track-time").textContent = 
+          `${Math.floor(data.progress_ms / 60000)}:${String(Math.floor((data.progress_ms % 60000) / 1000)).padStart(2, '0')} / ` +
+          `${Math.floor(data.duration_ms / 60000)}:${String(Math.floor((data.duration_ms % 60000) / 1000)).padStart(2, '0')}`;
+
+      } catch (err) {
+        console.error("Failed to fetch now playing", err);
+      }
+    }
+
+    fetchNowPlaying();
+    setInterval(fetchNowPlaying, 5000); // Refresh every 5 seconds
+  </script>
+</body>
+</html>

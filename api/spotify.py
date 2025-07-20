@@ -31,7 +31,6 @@ SPOTIFY_TOP_TRACKS_URL = "https://api.spotify.com/v1/me/top/tracks?limit=5&time_
 SPOTIFY_TOP_ARTISTS_URL = "https://api.spotify.com/v1/me/top/artists?limit=5&time_range=short_term"     # short_term = 4wk data
 app = Flask(__name__)
 
-
 def getAuth():
     return b64encode(f"{SPOTIFY_CLIENT_ID}:{SPOTIFY_SECRET_ID}".encode()).decode(
         "ascii"
@@ -184,4 +183,4 @@ def catch_all(path):
 
 
 if __name__ == "__main__":
-    app.run(host="0.0.0.0", debug=True, port=os.getenv("PORT") or 5000)
+    app.run(host="0.0.0.0", debug=True, port=os.getenv("PORT") or 5050)
