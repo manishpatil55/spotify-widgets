@@ -8,8 +8,8 @@
 
                 .currentStatus {
                     float: left;
-                    color: #f7f7f7;  
-                    font-size: 24px; <!-- f7f7f7 - 000000 -->
+                    color: #000000;  
+                    font-size: 24px; <!-- f7f7f7 -->
                     position: static;
                     margin-top: -5px;
                     margin-left: 10px;
@@ -20,7 +20,7 @@
                                 );       
                     background-size: 200% 100%;
                     background-position: 0% 50%;
-                    -webkit-text-fill-color: transparent; <!-- transparent -->
+                    -webkit-text-fill-color: ; <!-- transparent -->
                     -webkit-background-clip: text;
                     -webkit-box-decoration-break: clone;
                     box-decoration-break: clone;
@@ -30,8 +30,8 @@
                 .container {
                     border-radius: 20px;
                     padding: 10px 10px 10px 10px;
-                    background-color: {{background_color}};  <!-- {{background_color}} - #613056 -->
-                    border: 1px solid {{background_color}};  <!-- {{background_color}} - 000000 -->
+                    background-color: #613056;  <!-- {{background_color}} -->
+                    border: 1px solid #000000;  <!-- {{background_color}} -->
                 }
 
                 .art {
@@ -54,8 +54,8 @@
                     white-space: nowrap;
                     text-overflow: ellipsis;
                     
-       <!--     background-color: #000000;  -->
-                   background: linear-gradient(
+                    background-color: #000000;
+            <!-- background: linear-gradient(
                                     125deg, 
                                     rgb({{ songPalette[0][0] }}, {{ songPalette[0][1] }}, {{ songPalette[0][2] }}),
                                     rgb({{ songPalette[1][0] }}, {{ songPalette[1][1] }}, {{ songPalette[1][2] }})
@@ -80,12 +80,12 @@
                     white-space: nowrap;
                     text-overflow: ellipsis;
 
-     <!--        background-color: #000000; --> 
-                    background: linear-gradient(
+                    background-color: #000000;
+        <!--     background: linear-gradient(
                                     -125deg, 
                                     rgb({{ songPalette[0][0] }}, {{ songPalette[0][1] }}, {{ songPalette[0][2] }}),
                                     rgb({{ songPalette[1][0] }}, {{ songPalette[1][1] }}, {{ songPalette[1][2] }})
-                                );                   
+                                );    -->                
                     background-size: 200% 100%;
                     background-position: 0% 50%;
                     -webkit-text-fill-color: transparent;
@@ -104,7 +104,7 @@
 
                 #bars {
                     bottom: 2px;
-                    position: absolute; <!--  absolute - relative -->
+                    position: relative; <!--  absolute -->
                     margin: -20px 0 0 0px;
                 }
 
@@ -112,8 +112,9 @@
                     width: 3px;
                     bottom: 1px;
                     height: 15px;
-                    position: absolute; <!--  absolute - relative -->
-    <!--         background-color: #000000;  -->
+                    position: relative; <!--  absolute -->
+
+                    background-color: #000000;
                     background: #5433FF;  /* fallback for old browsers */
                     background: -webkit-linear-gradient(to right, #20BDFF, #ab66ff, #5433FF, #20BDFF);  /* Chrome 10-25, Safari 5.1-6 */
                     background: linear-gradient(
@@ -122,7 +123,7 @@
                                     rgb({{ barPalette[1][0] }}, {{ barPalette[1][1] }}, {{ barPalette[1][2] }}) 33%, 
                                     rgb({{ barPalette[2][0] }}, {{ barPalette[2][1] }}, {{ barPalette[2][2] }}) 66%, 
                                     rgb({{ barPalette[3][0] }}, {{ barPalette[3][1] }}, {{ barPalette[3][2] }}) 100%
-                                );  
+                                );   -->
                     background-size: 200% 100%;
                     background-position: 0% 50%;
                     background-attachment: fixed;
