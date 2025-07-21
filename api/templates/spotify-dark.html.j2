@@ -26,12 +26,14 @@
                     box-decoration-break: clone;
                     animation: gradient 17s ease infinite;
                 }
-                
+            
                 .container {
                     border-radius: 20px;
-                    padding: 10px 10px 10px 10px;
-                    background-color: #54dac3ff;  <!-- {{background_color}} - #613056 -->
-                    border: 1px solid {{background_color}};  <!-- {{background_color}} - 000000 -->
+                    padding: 10px;
+                    background: rgba(255, 255, 255, 0.15);
+                    border: 1px solid rgba(255, 255, 255, 0.3);
+                    backdrop-filter: blur(15px);
+                    -webkit-backdrop-filter: blur(15px);
                     position: relative;
                     overflow: hidden;
                 }
@@ -112,11 +114,13 @@
 
 
                 #bars {
-                    width: 40px;
+                    width: 30px;
                     height: 30px;
                     bottom: 23px;
                     position: absolute; <!--  absolute - relative -->
                     margin: -20px 0 0 0px;
+                    left: 50%;
+                    transform: translateX(-50%);
          <!--       background-color: #000000;  -->
                 }
 
