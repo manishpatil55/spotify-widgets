@@ -115,7 +115,7 @@ def loadImageB64(url):
 
 
 def makeSVG(data, background_color, border_color):
-    barCount = 62 #84
+    barCount = 61 #84
     contentBar = "".join(["<div class='bar'></div>" for _ in range(barCount)])
     barCSS = barGen(barCount)
 
