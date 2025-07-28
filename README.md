@@ -71,34 +71,7 @@ curl -X POST -H "Content-Type: application/x-www-form-urlencoded" -H "Authorizat
 
 - Deploy!
 
-### Deploy to Heroku
 
-[![Deploy](https://www.herokucdn.com/deploy/button.svg)](https://dashboard.heroku.com/new?template=https%3A%2F%2Fgithub.com%2Fnovatorem%2Fnovatorem)
-
-- Create a Heroku application via the Heroku CLI or via the Heroku Dashboard. Connect the app with your GitHub repository and enable automatic builds <br>
-  `PS. automatic build means that everytime you push changes to remote, heroku will rebuild and redeploy the app.`
-  - To start the Flask server execute `heroku ps:scale web=1` once the build is completed.
-- Or click the `Deploy to Heroku` button above to automatically start the deployment process.
-
-### Run locally with Docker
-
-- You need to have [Docker](https://docs.docker.com/get-docker/) installed.
-
-- Add Environment Variables:
-  - `SPOTIFY_REFRESH_TOKEN`
-  - `SPOTIFY_CLIENT_ID`
-  - `SPOTIFY_SECRET_ID`
-- To run the service, open a terminal in the root folder of the repo: <br>
-  Execute:
-  ```
-  docker compose up
-  ```
-- When finished, navigate to [http://localhost:5000/](http://localhost:5000/)
-- To stop the service, open a terminal in the root folder of the repo: <br>
-  Execute:
-  ```
-  docker compose down
-  ```
 
 ## ReadMe
 
@@ -141,21 +114,25 @@ You can customize the appearance of your `Card` however you wish with URL params
 - `border_color` - Card border color _(hex color)_ without `#`
 
 Use `/?background_color=8b0000&border_color=ffffff` parameter like so:  
-&nbsp; <br> [![Spotify](https://novatorem.vercel.app/api/spotify?background_color=0d1117&border_color=ffffff)]()
+&nbsp; <br> [![Spotify](https://spotify-widgets.vercel.app/api/spotify)](https://open.spotify.com/user/dai8yewnucqjjqcjueoy94q16)
+
 
 ### Spotify Logo
 
-You can add the spotify logo by removing the commented out code, seen below:
+You can remove the spotify logo by commenting out code, seen below:
 
 ```html
 <a href="{{songURI}}" class="spotify-logo">
-  <svg role="img" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
-    <title>Spotify</title>
-    <path
-      d="M12 0C5.4 0 0 5.4 0 12s5.4 12 12 12 12-5.4 12-12S18.66 0 12 0zm5.521 17.34c-.24.359-.66.48-1.021.24-2.82-1.74-6.36-2.101-10.561-1.141-.418.122-.779-.179-.899-.539-.12-.421.18-.78.54-.9 4.56-1.021 8.52-.6 11.64 1.32.42.18.479.659.301 1.02zm1.44-3.3c-.301.42-.841.6-1.262.3-3.239-1.98-8.159-2.58-11.939-1.38-.479.12-1.02-.12-1.14-.6-.12-.48.12-1.021.6-1.141C9.6 9.9 15 10.561 18.72 12.84c.361.181.54.78.241 1.2zm.12-3.36C15.24 8.4 8.82 8.16 5.16 9.301c-.6.179-1.2-.181-1.38-.721-.18-.601.18-1.2.72-1.381 4.26-1.26 11.28-1.02 15.721 1.621.539.3.719 1.02.419 1.56-.299.421-1.02.599-1.559.3z"
-    />
-  </svg>
-</a>
+                        <svg role="img" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                            <defs>
+                                <linearGradient id="spotifyGradient" gradientTransform="rotate(125)">
+                                    <stop offset="0%" stop-color="rgb({{ songPalette[0][0] }}, {{ songPalette[0][1] }}, {{ songPalette[0][2] }})" />
+                                    <stop offset="100%" stop-color="rgb({{ songPalette[1][0] }}, {{ songPalette[1][1] }}, {{ songPalette[1][2] }})" />
+                                </linearGradient>
+                            </defs>
+                            <path d="M12 0C5.4 0 0 5.4 0 12s5.4 12 12 12 12-5.4 12-12S18.66 0 12 0zm5.521 17.34c-.24.359-.66.48-1.021.24-2.82-1.74-6.36-2.101-10.561-1.141-.418.122-.779-.179-.899-.539-.12-.421.18-.78.54-.9 4.56-1.021 8.52-.6 11.64 1.32.42.18.479.659.301 1.02zm1.44-3.3c-.301.42-.841.6-1.262.3-3.239-1.98-8.159-2.58-11.939-1.38-.479.12-1.02-.12-1.14-.6-.12-.48.12-1.021.6-1.141C9.6 9.9 15 10.561 18.72 12.84c.361.181.54.78.241 1.2zm.12-3.36C15.24 8.4 8.82 8.16 5.16 9.301c-.6.179-1.2-.181-1.38-.721-.18-.601.18-1.2.72-1.381 4.26-1.26 11.28-1.02 15.721 1.621.539.3.719 1.02.419 1.56-.299.421-1.02.599-1.559.3z"/>
+                        </svg>
+                    </a>
 ```
 
 ## Requests

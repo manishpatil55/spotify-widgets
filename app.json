@@ -1,5 +1,5 @@
 {
-    "name": "novatorem",
+    "name": "Spotify-Widgets",
     "description": "Realtime profile Readme displaying currently playing song on Spotify using the Spotify API.",
     "scripts": {
         "postdeploy": "gunicorn --workers=1 api.spotify:app"
@@ -19,12 +19,6 @@
         "web": {
             "quantity": 1
         }
-    },
-    "addons": [],
-    "buildpacks": [
-        {
-            "url": "heroku/python"
-        }
-    ],
-    "stack": "heroku-20"
+    }
+  
 }
