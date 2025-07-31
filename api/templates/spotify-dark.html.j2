@@ -46,13 +46,16 @@
                     margin-left: -5px;
                 }
 
+                .cover {
+                    width: 100px;
+                    height: 100px;
+                    border-radius: 20px;
+                    <!--  margin: 0 0 0 20px;  -->
+                }
+
                 .content {
                     width: 70%;
                     margin-left: 10px;
-                    display: flex;
-                    position: relative;
-                    flex-direction: column;
-                    justify-content: flex-start;
                     padding-top: 5px;
                     padding-bottom: 5px;
                 }
@@ -108,14 +111,6 @@
                     animation: gradient 12s ease infinite;
                 }
 
-                .cover {
-                    width: 100px;
-                    height: 100px;
-                    border-radius: 20px;
-                    <!--  margin: 0 0 0 20px;  -->
-                }
-
-
                 #bars {
                     width: 240px;    <!-- animated bar length  -->
                     height: 30px;
@@ -145,17 +140,6 @@
                     background-position: 0% 50%;
                     background-attachment: fixed;
                     animation: gradient 15s ease infinite, pulse 0ms -800ms ease-in infinite alternate;
-                }
-                
-                .spotify-logo {
-                    position: absolute;
-                    right: 10px;
-                    top: 10px;
-                    width: 25px;
-                }
-
-                .spotify-logo svg path {
-                    fill: url(#spotifyGradient);
                 }
 
                 a {
@@ -190,6 +174,18 @@
                 }
 
                 {{barCSS|safe}}
+
+                .spotify-logo {
+                    position: absolute;
+                    right: 10px;
+                    top: 10px;
+                    width: 25px;
+                }
+
+                .spotify-logo svg path {
+                    fill: url(#spotifyGradient);
+                }
+
             </style>
 
             <!--
